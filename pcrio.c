@@ -401,6 +401,9 @@ struct pcr_file *pcr_read_file(const char *filename, pcr_error_code *err)
   else
   {
     pfile = (struct pcr_file *) pcr_malloc(sizeof(struct pcr_file), err);
+    if (*err != PCR_ERROR_NONE) {
+      return NULL;
+    }
     
     pfile->rm_stub = NULL;
     pfile->image_optional_header32 = NULL;
@@ -478,6 +481,9 @@ void pcr_read_section_table(struct pcr_file *pfile, FILE *file, pcr_error_code *
   uint16_t num_sec = pfile->image_file_header.number_of_sections;
         
   pfile->section_table = (struct image_section_header *)pcr_malloc(sizeof(struct image_section_header) * num_sec, err);
+  if (PCR_FAILURE(*err))
+    return;
+
   pcr_fread(pfile->section_table, sizeof(struct image_section_header), num_sec, file, err);
   
   qsort(pfile->section_table, num_sec, sizeof(struct image_section_header),  
@@ -497,6 +503,8 @@ void pcr_read_section_data(struct pcr_file *pfile, FILE *stream, pcr_error_code 
   num_sec = pfile->image_file_header.number_of_sections;
   
   pfile->section_data = (char **)pcr_malloc(sizeof(char *) * num_sec, err);
+  if (PCR_FAILURE(*err))
+    return;
   
   for (i=0; i<num_sec && PCR_SUCCESS(*err); i++)
   {
@@ -513,6 +521,8 @@ void pcr_read_section_data(struct pcr_file *pfile, FILE *stream, pcr_error_code 
     else
     { 
       pfile->section_data[i] = (char *)pcr_malloc(sec->virtual_size, err);
+      if (PCR_FAILURE(*err))
+        return;
         
       pcr_fread(pfile->section_data[i], sec->virtual_size, 1, stream, err);
     }
@@ -539,6 +549,9 @@ void pcr_read_rsrc_section(struct pcr_file *pfile, FILE *file, pcr_error_code *e
     struct language_info_array *lang_info = NULL;
 
     pfile->rsrc_section_data = (struct resource_section_data *)pcr_malloc(sizeof(struct resource_section_data), err);
+    if (PCR_FAILURE(*err))
+      return;
+
     pfile->rsrc_section_data->rsrc_string_cache.sptr = NULL;
     
     lang_info = &pfile->rsrc_section_data->language_info;
@@ -568,12 +581,14 @@ void pcr_read_rsrc_section(struct pcr_file *pfile, FILE *file, pcr_error_code *e
 struct resource_tree_node * pcr_read_rsrc_tree(FILE *file, pcr_error_code *err_code, 
                        long section_offset, long raw_data_offset, int level, enum resource_type type, struct language_info_array *cult_info_arr)
 {
-  if (*err_code != PCR_ERROR_NONE)
+  if (PCR_FAILURE(*err_code))
     return NULL;
   
   struct resource_tree_node *node = NULL;  
 
   node = pcr_create_rsrc_tree_node(err_code);
+  if (PCR_FAILURE(*err_code))
+    return NULL;
  
   if (node != NULL)
   {
@@ -587,10 +602,14 @@ struct resource_tree_node * pcr_read_rsrc_tree(FILE *file, pcr_error_code *err_c
   
     name_entries = pcr_read_rsrc_directory_entries(file, num_name_entries, err_code);
     id_entries = pcr_read_rsrc_directory_entries(file, num_id_entries, err_code);
-  
+
     node->name_entries = (struct resource_tree_node **)pcr_malloc(sizeof(struct resource_tree_node *) * num_name_entries, err_code);
+    if (PCR_FAILURE(*err_code))
+      return NULL;
     node->id_entries = (struct resource_tree_node **)pcr_malloc(sizeof(struct resource_tree_node *) * num_id_entries, err_code);
-    
+    if (PCR_FAILURE(*err_code))
+      return NULL;
+
     if (*err_code != PCR_ERROR_NONE)
     {
       free(node->name_entries);
@@ -605,7 +624,7 @@ struct resource_tree_node * pcr_read_rsrc_tree(FILE *file, pcr_error_code *err_c
     for (i=0; i < num_name_entries; i++)
       node->name_entries[i] = pcr_read_sub_tree(file, err_code, section_offset, raw_data_offset, &name_entries[i], 
                                                 TREE_NODE_IDENTIFIER_NAME, level, type, cult_info_arr);
-  
+
     for (i=0; i < num_id_entries; i++)
       node->id_entries[i] = pcr_read_sub_tree(file, err_code, section_offset, raw_data_offset, &id_entries[i], 
                                               TREE_NODE_IDENTIFIER_ID, level, type, cult_info_arr);
@@ -1070,6 +1089,11 @@ void pcr_write_section_data(struct pcr_file *pcr_file, FILE *stream,
     return;
   
   num_sec = pcr_file->image_file_header.number_of_sections;
+
+  if (!num_sec) {
+    *err_code = PCR_ERROR_CORRUPT_FILE;
+    return;
+  }
   
   for (i=0; i<num_sec; i++)
   {
@@ -1274,6 +1298,8 @@ struct resource_tree_node * pcr_create_rsrc_tree_node(pcr_error_code *err)
   size_t node_size = sizeof(struct resource_tree_node);
   
   node = (struct resource_tree_node *)pcr_malloc(node_size, err);
+  if (PCR_FAILURE(*err))
+    return NULL;
   
   memset(node, 0, node_size);
   
@@ -1451,6 +1477,8 @@ void pcr_update_language_info(struct language_info_array *lang_info_array, uint3
   else
   {
     lang_info_array->array = (struct language_info *)pcr_realloc(lang_info_array->array, sizeof(struct language_info), err);
+    if (PCR_FAILURE(*err))
+      return;
     
     lang_info_array->array[lang_info_array->count] = key;
     lang_info_array->count ++;
@@ -1873,6 +1901,8 @@ int pcr_set_stringC(struct pcr_file *pf, uint32_t id, struct pcr_language lang, 
     
     resource_data->strings = (char **)pcr_realloc(resource_data->strings, 
                                                   sizeof(char *) * new_number_of_strings, &err);
+    if (PCR_FAILURE(err))
+      return err;
     
     for (i=resource_data->number_of_strings; i<new_number_of_strings; i++)
     {
@@ -1895,11 +1925,16 @@ int pcr_set_stringC(struct pcr_file *pf, uint32_t id, struct pcr_language lang, 
     free(*dest_str);
     
     *dest_str = (char *)pcr_malloc(sizeof(char), &err);
+    if (PCR_FAILURE(err))
+      return err;
+
     *dest_str[0] = '\0';
   }
   else
   {
     *dest_str = (char *)pcr_realloc(*dest_str, src_len + 1, &err); //TODO err check
+    if (PCR_FAILURE(err))
+      return err;
       
     strcpy(*dest_str, src);
   }
