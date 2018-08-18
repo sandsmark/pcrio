@@ -1,14 +1,20 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.0)
 
-enable_testing()
+project(pcrio)
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
-project(pecoffresourcelib)
+if(NOT MSVC)
+    add_definitions(-Wall -Wsign-compare)
+endif()
 
-add_definitions(-Wall -Wsign-compare)
+add_library(pcrio SHARED pcrio.c)
+set_target_properties(pcrio PROPERTIES PUBLIC_HEADER "pcrio.h;pcrdef.h")
+install(TARGETS pcrio
+        LIBRARY DESTINATION lib
+        PUBLIC_HEADER DESTINATION include
+)
 
-#add_executable(pecoffresourcelib main.c pcrio.c )
-#add_executable(debug_info debug_info.c pcrio.c)
 
 add_subdirectory(tests)
 

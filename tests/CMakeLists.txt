@@ -1,4 +1,3 @@
-
 enable_testing()
 
 find_package(Check REQUIRED)
