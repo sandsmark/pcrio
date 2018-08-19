@@ -16,5 +16,8 @@ install(TARGETS pcrio
 )
 
 
-add_subdirectory(tests)
+find_package(Check)
+if( CHECK_FOUND )
+    add_subdirectory(tests)
+endif()
 
