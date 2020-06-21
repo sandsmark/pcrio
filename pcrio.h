@@ -46,6 +46,7 @@
 #define PCR_FAILURE(x) (x != PCR_ERROR_NONE)
 
 #define PCR_RET_ERR_LANG_NOT_SET -2
+#define PCR_RET_ERR_LANG_NOT_UNIQUE -3
 
 enum pcr_error {
   PCR_ERROR_NONE = 0,

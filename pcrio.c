@@ -1701,7 +1701,7 @@ uint32_t pcr_get_codepageL(const struct pcr_file *pf, uint32_t string_id, uint32
     return rsptr.codepage;
   
   if (pcr_get_language_count(pf, language_id) > 1) // language not unique
-    return -1;
+    return (uint32_t)PCR_RET_ERR_LANG_NOT_UNIQUE;
   
   // get language from info array
   const struct pcr_language *langptr = pcr_get_language(pf, language_id);
