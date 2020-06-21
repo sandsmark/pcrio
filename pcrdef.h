@@ -37,6 +37,8 @@
 #ifndef PCRDEF_H
 #define PCRDEF_H
 
+#include <stdint.h>
+
 #define IMAGE_OPTIONAL_HDR32_MAGIC 0x010b
 #define IMAGE_OPTIONAL_HDR64_MAGIC 0x020b
 
@@ -94,8 +96,8 @@ struct image_data_directory {
 
 struct image_optional_header32 {
   uint16_t magic;
-  unsigned char major_linker_version;
-  unsigned char minor_linker_version;
+  uint8_t major_linker_version;
+  uint8_t minor_linker_version;
   uint32_t size_of_code;
   uint32_t size_of_initialized_data;
   uint32_t size_of_uninitialized_data;
