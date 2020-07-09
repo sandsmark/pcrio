@@ -39,6 +39,7 @@
 #include <string.h>
 
 #include "pcrio.h"
+#include "winlocalenames.h"
 
 #define INT32_HIGH_BYTE 2147483648u
 
@@ -567,7 +568,7 @@ void pcr_read_rsrc_section(struct pcr_file *pfile, FILE *file, pcr_error_code *e
 
     if (lang_info->count == 1)
     {
-      /*printf("Setting default culture to %d\n", lang_info->array[0].lang.id);*/
+      printf("Setting default culture to %s (%d)\n", localeName(lang_info->array[0].lang.id), lang_info->array[0].lang.id);
 
       pfile->rsrc_section_data->default_language = &lang_info->array[0].lang;
     }
