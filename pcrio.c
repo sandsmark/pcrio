@@ -1954,3 +1954,31 @@ int pcr_set_stringC(struct pcr_file *pf, uint32_t id, struct pcr_language lang, 
   
   return err;
 }
+
+size_t pcr_get_all_string_ids(struct pcr_file *pf, uint32_t **ids)
+{
+  struct resource_tree_node *string_dir =
+          pcr_get_sub_id_node(pf->rsrc_section_data->root_node, RESOURCE_TYPE_STRINGS);
+
+  const uint32_t num_entries = string_dir->directory_table.number_of_id_entries;
+  *ids = malloc(sizeof(uint32_t) * num_entries * MAX_STRINGS_PER_LEAF);
+
+  size_t pos = 0;
+  for (size_t i=0; i < num_entries; i++){
+    const uint32_t id = string_dir->id_entries[i]->id * MAX_STRINGS_PER_LEAF;
+
+    uint16_t num_strings = string_dir->id_entries[i]->id_entries[0]->resource_data->number_of_strings;
+    if (num_strings > MAX_STRINGS_PER_LEAF) {
+      printf("Invalid number of strings %d\n", num_strings);
+      num_strings = MAX_STRINGS_PER_LEAF;
+    }
+    for (size_t j=0; j<string_dir->id_entries[i]->id_entries[0]->resource_data->number_of_strings; j++) {
+      if (strlen(string_dir->id_entries[i]->id_entries[0]->resource_data->strings[j]) == 0) {
+        continue;
+      }
+      (*ids)[pos++] = id + j;
+    }
+  }
+
+  return pos;
+}

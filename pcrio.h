@@ -148,4 +148,6 @@ extern int pcr_get_stringL(const struct pcr_file *pf, uint32_t id, uint32_t lang
  */
 extern int pcr_set_stringC(struct pcr_file *pf, uint32_t id, struct pcr_language lang, const char *src);
 
+extern size_t pcr_get_all_string_ids(struct pcr_file *pf, uint32_t **ids);
+
 #endif // PCRIO_H
