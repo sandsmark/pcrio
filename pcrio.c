@@ -344,8 +344,8 @@ uint32_t pcr_align(uint32_t number, uint32_t align)
  */
 int pcr_comp_image_secion_headers (const void *a, const void *b)
 {
-  return ((struct image_section_header *)a)->pointer_to_raw_data -
-         ((struct image_section_header *)b)->pointer_to_raw_data; 
+  return ((const struct image_section_header *)a)->pointer_to_raw_data -
+         ((const struct image_section_header *)b)->pointer_to_raw_data;
 }
 
 /**
@@ -353,32 +353,32 @@ int pcr_comp_image_secion_headers (const void *a, const void *b)
  */
 int pcr_comp_id_tree_nodes (const void *a, const void *b)
 {
-  return (*(struct resource_tree_node **)a)->id - 
-         (*(struct resource_tree_node **)b)->id;
+  return (*(struct resource_tree_node * const*)a)->id -
+         (*(struct resource_tree_node * const*)b)->id;
 }
 
 int pcr_comp_name_tree_nodes (const void *a, const void *b)
 {
-  return strcmp((*(struct resource_tree_node **)a)->name, 
-                (*(struct resource_tree_node **)b)->name); 
+  return strcmp((*(struct resource_tree_node * const*)a)->name,
+                (*(struct resource_tree_node * const*)b)->name);
 }
 
 int pcr_comp_language_info (const void *a, const void *b)
 {
-  int id_diff = ((struct language_info *)a)->lang.id -
-                ((struct language_info *)b)->lang.id; 
+  int id_diff = ((struct language_info const *)a)->lang.id -
+                ((struct language_info const *)b)->lang.id;
   
   if (id_diff == 0)
-    return ((struct language_info *)a)->lang.codepage -
-           ((struct language_info *)b)->lang.codepage; 
+    return ((struct language_info const *)a)->lang.codepage -
+           ((struct language_info const *)b)->lang.codepage;
   else
     return id_diff;
 }
 
 int pcr_comp_language_info_without_cp (const void *a, const void *b)
 {
-  return ((struct language_info *)a)->lang.id -
-         ((struct language_info *)b)->lang.id; 
+  return ((struct language_info const *)a)->lang.id -
+         ((struct language_info const *)b)->lang.id;
 }
 /*
  * read functions
@@ -404,6 +404,7 @@ struct pcr_file *pcr_read_file(const char *filename, pcr_error_code *err)
   {
     pfile = (struct pcr_file *) pcr_malloc(sizeof(struct pcr_file), err);
     if (*err != PCR_ERROR_NONE) {
+      fclose(file);
       return NULL;
     }
     
@@ -609,12 +610,16 @@ struct resource_tree_node * pcr_read_rsrc_tree(FILE *file, pcr_error_code *err_c
     id_entries = pcr_read_rsrc_directory_entries(file, num_id_entries, err_code);
 
     node->name_entries = (struct resource_tree_node **)pcr_malloc(sizeof(struct resource_tree_node *) * num_name_entries, err_code);
-    if (PCR_FAILURE(*err_code))
+    if (*err_code != PCR_ERROR_NONE)
+    {
+      free(node->name_entries);
+      free(name_entries);
+      free(id_entries);
+      free(node);
       return NULL;
-    node->id_entries = (struct resource_tree_node **)pcr_malloc(sizeof(struct resource_tree_node *) * num_id_entries, err_code);
-    if (PCR_FAILURE(*err_code))
-      return NULL;
+    }
 
+    node->id_entries = (struct resource_tree_node **)pcr_malloc(sizeof(struct resource_tree_node *) * num_id_entries, err_code);
     if (*err_code != PCR_ERROR_NONE)
     {
       free(node->name_entries);
@@ -624,7 +629,7 @@ struct resource_tree_node * pcr_read_rsrc_tree(FILE *file, pcr_error_code *err_c
       free(node);
       return NULL;
     }
-    
+
     int i;
     for (i=0; i < num_name_entries; i++)
       node->name_entries[i] = pcr_read_sub_tree(file, err_code, section_offset, raw_data_offset, &name_entries[i], 
@@ -938,7 +943,7 @@ void pcr_prepare_rsrc_node(struct resource_tree_node *node, enum pcr_error *err_
         
       if (act_size != node->resource_data->data_entry.size)
       {
-        printf("Warning: Wrong string size %d act %d (Word aligned?)\n", 
+        printf("Warning: Wrong string size %u act %u (Word aligned?)\n",
                node->resource_data->data_entry.size, act_size);
         
         node->resource_data->data_entry.size = act_size;
@@ -978,10 +983,10 @@ void pcr_update_section_table(struct pcr_file *pfile, struct rsrc_section_size r
   
   virt_diff = (int32_t)pcr_align(virtual_rsrc_size, sec_align) - pcr_align(rsrc_sh->virtual_size, sec_align);
   
-  printf("New virt (aligned): %d, Old virt (aligned): %d\n", pcr_align(virtual_rsrc_size, sec_align), pcr_align(rsrc_sh->virtual_size, sec_align));
+  printf("New virt (aligned): %u, Old virt (aligned): %u\n", pcr_align(virtual_rsrc_size, sec_align), pcr_align(rsrc_sh->virtual_size, sec_align));
   
   printf("Raw diff: %d\n", raw_diff);
-  printf("TODO: Virt diff: %d, sec_align: %d\n", virt_diff, sec_align);
+  printf("TODO: Virt diff: %d, sec_align: %u\n", virt_diff, sec_align);
   
   rsrc_sh->virtual_size = virtual_rsrc_size;
 
@@ -1014,7 +1019,7 @@ void pcr_update_section_table(struct pcr_file *pfile, struct rsrc_section_size r
       }
     }
     
-    printf("Debug: Size of initialized data: %d\n", size_of_initialized_data);
+    printf("Debug: Size of initialized data: %u\n", size_of_initialized_data);
     
     // update header TODO move to an extra function
     pfile->image_optional_header32->size_of_initialized_data = size_of_initialized_data;
