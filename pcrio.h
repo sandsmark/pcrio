@@ -58,6 +58,8 @@ enum pcr_error {
   PCR_ERROR_UNSUPPORTED = 6
 };
 
+extern int pcr_print_debug;
+
 typedef enum pcr_error pcr_error_code;
 
 /**
