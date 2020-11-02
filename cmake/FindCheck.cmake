@@ -13,10 +13,11 @@
 #  For details see the accompanying COPYING-CMAKE-SCRIPTS file.
 
 
-INCLUDE( FindPkgConfig )
+find_package(PkgConfig)
+if (PkgConfig_FOUND)
 
 # Take care about check.pc settings
-PKG_SEARCH_MODULE( CHECK check )
+pkg_check_modules( CHECK check )
 
 # Look for CHECK include dir and libraries
 IF( NOT CHECK_FOUND )
@@ -44,3 +45,4 @@ ENDIF( NOT CHECK_FOUND )
 # Hide advanced variables from CMake GUIs
 MARK_AS_ADVANCED( CHECK_INCLUDE_DIRS CHECK_LIBRARIES )
 
+endif(PkgConfig_FOUND)
