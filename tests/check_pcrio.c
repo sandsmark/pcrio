@@ -31,6 +31,7 @@ void test_check_string(struct pcr_file *pf, uint32_t id, int32_t lang, const cha
   buff_size = pcr_get_strlenL(pf, id, lang) + 1;
   
   buff = (char *)malloc(sizeof(char) * buff_size);
+  fail_unless(buff != NULL, "alloc failed");
   
   pcr_get_stringL(pf, id, lang, buff, buff_size);
   

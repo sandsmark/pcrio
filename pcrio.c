@@ -205,17 +205,17 @@ const char* pcr_error_message(pcr_error_code err)
 {
   switch(err)
   {
-    case PCR_ERROR_NONE: return "Success"; break;
-    case PCR_ERROR_BAD_ALLOC: return "Bad alloc!"; break;
-    case PCR_ERROR_READ: return "Unable to read file"; break;
-    case PCR_ERROR_WRITE: return "Unable to write file"; break;
-    case PCR_ERROR_CORRUPT_FILE: return "Corrupt file"; break;
+    case PCR_ERROR_NONE: return "Success";
+    case PCR_ERROR_BAD_ALLOC: return "Bad alloc!";
+    case PCR_ERROR_READ: return "Unable to read file";
+    case PCR_ERROR_WRITE: return "Unable to write file";
+    case PCR_ERROR_CORRUPT_FILE: return "Corrupt file";
     case PCR_ERROR_INVALID_SIGNATURE: 
-      return "Invalid signature (corrupt file?)"; break;
+      return "Invalid signature (corrupt file?)";
     case PCR_ERROR_UNSUPPORTED: 
-      return "Unsupported file (missing functionality)"; break;
+      return "Unsupported file (missing functionality)";
     default:
-      return "No error message. Did you initialize the error?"; break;
+      return "No error message. Did you initialize the error?";
   }
 }
 
@@ -1572,13 +1572,11 @@ struct resource_tree_node* pcr_get_sub_id_node(const struct resource_tree_node *
 struct resource_tree_node* pcr_get_sub_name_node(const struct resource_tree_node *node, const char *name)
 {
   struct resource_tree_node key, *kptr, **result = NULL;
-  pcr_error_code err = PCR_ERROR_NONE;
   
   if (node && node->directory_table.number_of_name_entries > 0)
   {
-    key.name = (char *)pcr_malloc(strlen(name), &err);
+    key.name = strdup(name);
     
-    strcpy(key.name, name); 
     kptr = &key;
   
     result = (struct resource_tree_node **)bsearch(&kptr, node->name_entries, node->directory_table.number_of_name_entries, 
