@@ -1944,7 +1944,8 @@ int pcr_set_stringC(struct pcr_file *pf, uint32_t id, struct pcr_language lang, 
     if (PCR_FAILURE(err))
       return err;
       
-    strcpy(*dest_str, src);
+    strncpy(*dest_str, src, src_len);
+    (*dest_str)[src_len] = '\0';
   }
   
   lang_node->resource_data->data_entry.size += (len_diff*2); // *2 word alignmend

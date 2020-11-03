@@ -90,6 +90,7 @@ START_TEST (test_pcrio_pcr_get_string)
   const struct pcr_language *lang = pcr_get_default_language(pf);
   
   char *buff = (char *)malloc(sizeof(char) * 20);
+  fail_unless(buff != NULL, "alloc failed");
   
   fail_unless(pcr_get_stringL(pf, 4488, lang->id, buff, 20) == 0, NULL);
   fail_unless(strcmp(buff, "Takeda Shingen") == 0, NULL);
