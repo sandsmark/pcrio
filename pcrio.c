@@ -1126,7 +1126,7 @@ void pcr_write_section_data(struct pcr_file *pcr_file, FILE *stream,
       pcr_fwrite(pcr_file->section_data[i], sec->size_of_raw_data, 1, stream, err_code);
     }
 
-    printf(" DONE: %d\n", *err_code);
+    printf(" DONE: %u\n", *err_code);
   }
   
   // fill up until size of last section
