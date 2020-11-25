@@ -1507,6 +1507,10 @@ unsigned int pcr_get_language_count(const struct pcr_file *pf, uint32_t language
 {
   const struct language_info_array *linfo = pcr_get_language_info(pf);
   unsigned int i, lang_cnt = 0;
+  if (!linfo) {
+    printf("Error: No language info available\n");
+    return 0;
+  }
   
   for (i=0; i < linfo->count; i++)
       if (language_id == linfo->array[i].lang.id)
@@ -1960,6 +1964,10 @@ size_t pcr_get_all_string_ids(struct pcr_file *pf, uint32_t **ids)
 {
   struct resource_tree_node *string_dir =
           pcr_get_sub_id_node(pf->rsrc_section_data->root_node, RESOURCE_TYPE_STRINGS);
+  if (!string_dir) {
+    printf("Error: No defined string dir in file\n");
+    return 0;
+  }
 
   const uint32_t num_entries = string_dir->directory_table.number_of_id_entries;
   *ids = malloc(sizeof(uint32_t) * num_entries * MAX_STRINGS_PER_LEAF);
