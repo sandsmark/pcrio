@@ -37,6 +37,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 #include "pcrio.h"
 #include "winlocalenames.h"
@@ -570,6 +571,7 @@ void pcr_read_rsrc_section(struct pcr_file *pfile, FILE *file, pcr_error_code *e
 
     if (lang_info->count == 1)
     {
+      assert(lang_info->array);
       if (pcr_print_debug)
       {
         printf("Setting default culture to %s (%u)\n", localeName(lang_info->array[0].lang.id), lang_info->array[0].lang.id);
@@ -895,7 +897,7 @@ void pcr_prepare_rsrc_node(struct resource_tree_node *node, enum pcr_error *err_
                            struct rsrc_section_size *size)
 {
   int i = 0;
-    
+
   if (node->name == NULL)
   {
     node->directory_entry.id = node->id;
@@ -1120,7 +1122,7 @@ void pcr_write_section_data(struct pcr_file *pcr_file, FILE *stream,
     if (strcmp(SECTION_NAME_RESOURCE, sec->name) == 0)
       pcr_write_rsrc_section(pcr_file, stream, err_code, size);
     else {
-      printf(" (size: %d) ", sec->size_of_raw_data);
+      printf(" (size: %u) ", sec->size_of_raw_data);
       pcr_fwrite(pcr_file->section_data[i], sec->size_of_raw_data, 1, stream, err_code);
     }
 
