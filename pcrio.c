@@ -59,8 +59,8 @@
  * Macros
  */
 // Calc the id of the strings root node on name level.
-#define RSRC_STRING_NAME_DIR_ID(string_id) (string_id/MAX_STRINGS_PER_LEAF + 1);
-#define RSRC_STRING_DATA_OFFSET(string_id) string_id % MAX_STRINGS_PER_LEAF
+#define RSRC_STRING_NAME_DIR_ID(string_id) (string_id/MAX_STRINGS_PER_LEAF + 1)
+#define RSRC_STRING_DATA_OFFSET(string_id) (string_id % MAX_STRINGS_PER_LEAF)
 
 enum rsrc_node_identifier {
   TREE_NODE_IDENTIFIER_ID = 0,
